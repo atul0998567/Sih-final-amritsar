@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="appTitle">Amritsar City Link - Real-time Bus Tracking</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2 data-lang="appName">Amritsar City Link</h2>
+            <p data-lang="loadingMessage">Loading bus information...</p>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="main-app" class="main-app hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="header-left">
+                        <h1 class="app-title" data-lang="appName">Amritsar City Link</h1>
+                        <p class="app-subtitle" data-lang="subtitle">Real-time Bus Tracking System</p>
+                    </div>
+                    <div class="header-controls">
+                        <select id="language-select" class="form-control">
+                            <option value="en">English</option>
+                            <option value="pa">ਪੰਜਾਬੀ</option>
+                            <option value="hi">हिन्दी</option>
+                        </select>
+                        <button class="btn btn--secondary" id="high-contrast-toggle">
+                            <span data-lang="highContrast">High Contrast</span>
+                        </button>
+                        <button class="btn btn--secondary" id="low-data-toggle">
+                            <span data-lang="lowData">Low Data Mode</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container main-content">
+            <!-- Search and Filters -->
+            <section class="search-section">
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="bus-search" class="form-control search-input"
+                            placeholder="Search buses by route number or destination..." data-lang="searchPlaceholder">
+                        <div class="search-suggestions" id="search-suggestions"></div>
+                    </div>
+                    <button class="btn btn--primary" id="location-btn">
+                        <span data-lang="findNearby">Find Nearby</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Map and Bus Information -->
+            <div class="content-grid">
+                <!-- Map Section -->
+                <section class="map-section">
+                    <div class="map-container">
+                        <div id="map" class="map"></div>
+                        <div class="map-controls">
+                            <button class="btn btn--secondary map-btn" id="center-map">
+                                <span data-lang="centerMap">Center Map</span>
+                            </button>
+                            <button class="btn btn--secondary map-btn" id="toggle-routes">
+                                <span data-lang="showAllRoutes">Show All Routes</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bus List Section -->
+                <section class="bus-list-section">
+                    <div class="section-header">
+                        <h3 data-lang="availableBuses">Available Buses</h3>
+                        <div class="bus-status-legend">
+                            <span class="status-indicator status-indicator--running"></span>
+                            <small data-lang="running">Running</small>
+                            <span class="status-indicator status-indicator--delayed"></span>
+                            <small data-lang="delayed">Delayed</small>
+                            <span class="status-indicator status-indicator--stopped"></span>
+                            <small data-lang="stopped">Stopped</small>
+                        </div>
+                    </div>
+                    <div id="bus-list" class="bus-list">
+                        <!-- Bus items will be populated by JavaScript -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Route Information Panel -->
+            <section class="route-info-panel" id="route-info-panel">
+                <div class="route-info-header">
+                    <h4 id="selected-route-title" data-lang="routeInfo">Route Information</h4>
+                    <button class="btn btn--secondary btn--sm" id="close-route-info">×</button>
+                </div>
+                <div class="route-info-content">
+                    <div id="route-details">
+                        <p data-lang="selectRoute">Select a bus to view route details</p>
+                        <div class="bus-occupancy" id="bus-occupancy">
+                            <p data-lang="occupancy">Occupancy: <span id="occupancy-value">--</span></p>
+                        </div>
+                    </div>
+                    <div class="route-actions">
+                        <button class="btn btn--primary btn--sm" id="set-alert" disabled>
+                            <span data-lang="setAlert">Set Arrival Alert</span>
+                        </button>
+                        <button class="btn btn--secondary btn--sm" id="add-favorite" disabled>
+                            <span data-lang="addFavorite">Add to Favorites</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alerts Section -->
+            <section class="alerts-section">
+                <h3 data-lang="alerts">Service Alerts</h3>
+                <div id="alerts-container" class="alerts-container">
+                    <!-- Alerts will be populated by JavaScript -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Emergency Section (moved to bottom) -->
+        <section class="emergency-section">
+            <div class="container">
+                <div class="emergency-content">
+                    <div class="emergency-header">
+                        <h3 data-lang="emergency">Emergency Services</h3>
+                        <p data-lang="emergencySubtitle">24/7 Support Available</p>
+                    </div>
+                    <div class="emergency-contacts">
+                        <div class="emergency-item">
+                            <div class="emergency-icon">🚨</div>
+                            <div class="emergency-info">
+                                <h4 data-lang="emergencyHelpline">Emergency Helpline</h4>
+                                <a href="tel:+911234567890" class="emergency-link">+91 123-456-7890</a>
+                            </div>
+                        </div>
+                        <div class="emergency-item">
+                            <div class="emergency-icon">🚑</div>
+                            <div class="emergency-info">
+                                <h4 data-lang="medical">Medical Emergency</h4>
+                                <a href="tel:108" class="emergency-link">108</a>
+                            </div>
+                        </div>
+                        <div class="emergency-item">
+                            <div class="emergency-icon">👮</div>
+                            <div class="emergency-info">
+                                <h4 data-lang="police">Police</h4>
+                                <a href="tel:100" class="emergency-link">100</a>
+                            </div>
+                        </div>
+                        <div class="emergency-item">
+                            <div class="emergency-icon">🚒</div>
+                            <div class="emergency-info">
+                                <h4 data-lang="fire">Fire Department</h4>
+                                <a href="tel:101" class="emergency-link">101</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="emergency-actions">
+                        <button class="btn emergency-btn" id="report-incident">
+                            <span data-lang="reportIncident">Report Incident</span>
+                        </button>
+                        <button class="btn emergency-btn" id="request-assistance">
+                            <span data-lang="requestAssistance">Request Assistance</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h4 data-lang="appName">Amritsar City Link</h4>
+                        <p data-lang="footerDescription">Connecting the city with reliable public transportation</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4 data-lang="quickLinks">Quick Links</h4>
+                        <ul class="footer-links">
+                            <li><a href="#" data-lang="schedules">Schedules</a></li>
+                            <li><a href="#" data-lang="routes">Routes</a></li>
+                            <li><a href="#" data-lang="fares">Fares</a></li>
+                            <li><a href="#" data-lang="contact">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4 data-lang="support">Support</h4>
+                        <ul class="footer-links">
+                            <li><a href="#" data-lang="help">Help Center</a></li>
+                            <li><a href="#" data-lang="feedback">Feedback</a></li>
+                            <li><a href="#" data-lang="accessibility">Accessibility</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p data-lang="copyright">&copy; 2025 Amritsar City Link. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="modal hidden" id="alert-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 data-lang="setArrivalAlert">Set Arrival Alert</h4>
+                <button class="modal-close" id="close-alert-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p data-lang="alertDescription">Get notified when your bus is approaching</p>
+                <div class="form-group">
+                    <label class="form-label" data-lang="stopName">Stop Name</label>
+                    <select id="stop-select" class="form-control">
+                        <option value="" data-lang="selectStop">Select a stop</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-lang="notifyBefore">Notify me</label>
+                    <select id="notification-time" class="form-control">
+                        <option value="2">2 <span data-lang="minutesBefore">minutes before</span></option>
+                        <option value="5" selected>5 <span data-lang="minutesBefore">minutes before</span></option>
+                        <option value="10">10 <span data-lang="minutesBefore">minutes before</span></option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--secondary" id="cancel-alert">
+                    <span data-lang="cancel">Cancel</span>
+                </button>
+                <button class="btn btn--primary" id="confirm-alert">
+                    <span data-lang="setAlert">Set Alert</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
